@@ -41,16 +41,18 @@ export function generateWhatsAppMessage(data: CheckoutData): string {
   const itemsList = data.items.map((item) => `${item.quantity} ${item.name}`).join("\n")
 
   return `
-===== Extrato da Compra para o Whatsapp =====
+=== Comprovante de Pedido ===
 Nome: ${data.name}
 Email: ${data.email}
 Número do Telefone: ${data.phone}
+
 =====
 ID da Compra: ${orderId}
 =====
+
 Produtos comprados:
 ${itemsList}
-Total: R$${total}.00
+- Total: R$${total}.00
 
 ===== termos e políticas =====
 1. Pedido feito com sucesso através desta mensagem;
