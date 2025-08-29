@@ -17,7 +17,8 @@ export function Stand() {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
             Stand de <span className="text-accent">Blusa</span>
           </h2>
-          <p className="text-muted-foreground text-lg">Escolha sua blusa e viva a fé com estilo</p>
+          <p className="text-muted-foreground text-lg">
+            Escolha sua <span className="text-accent">blusa</span> e viva a fé com <span className="text-accent">estilo</span>!</p>
         </motion.div>
 
         <motion.div

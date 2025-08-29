@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useCart } from "@/hooks/use-cart"
 import { formatCurrency } from "@/lib/formats"
-import { sendWhatsAppOrder } from "@/lib/whatsapp"
+import { generateWhatsAppMessage, openWhatsApp, type CheckoutData } from "@/lib/whatsapp"
 import { PRODUCTS } from "@/lib/constants"
 import Image from "next/image"
 import Link from "next/link"
@@ -15,6 +15,11 @@ import { useState } from "react"
 export function CartPage() {
   const { items, addItem, removeItem, updateQuantity, clearCart, getTotal } = useCart()
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<Record<number, "pix" | "card">>({})
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
+  const [customerName, setCustomerName] = useState("")
+  const [customerEmail, setCustomerEmail] = useState("")
+  const [customerPhone, setCustomerPhone] = useState("")
+  const [copiedPix, setCopiedPix] = useState(false)
 
   const handleProductSelect = (productId: number, paymentMethod: "pix" | "card") => {
     const product = PRODUCTS.find((p) => p.id === productId)
@@ -25,7 +30,7 @@ export function CartPage() {
 
     if (existingItem) {
       // Update existing item with new payment method and price
-      removeItem(productId)
+      removeItem(productId, existingItem.paymentMethod)
       addItem({
         id: productId,
         name: product.name,
@@ -52,11 +57,30 @@ export function CartPage() {
 
   const handleFinishOrder = () => {
     if (items.length === 0) return
-    sendWhatsAppOrder(items)
+    setIsCheckoutOpen(true)
+  }
+
+  const handleSendOrder = () => {
+    if (!customerName || !customerEmail || !customerPhone) return
+    const data: CheckoutData = {
+      name: customerName,
+      email: customerEmail,
+      phone: customerPhone,
+      items,
+    }
+    const message = generateWhatsAppMessage(data)
+    openWhatsApp(message)
+    setIsCheckoutOpen(false)
+  }
+
+  const handleCopyPix = () => {
+    navigator.clipboard.writeText("+5521991442334")
+    setCopiedPix(true)
+    setTimeout(() => setCopiedPix(false), 3000)
   }
 
   return (
-    <div className="container mx-auto px-4 max-w-4xl">
+    <div className="container mx-auto px-4 max-w-4xl pt-16">
       <div className="flex items-center gap-4 mb-8">
         <Link href="/">
           <Button variant="outline" size="sm" className="gap-2 bg-transparent">
@@ -65,8 +89,10 @@ export function CartPage() {
           </Button>
         </Link>
         <div className="flex items-center gap-2">
-          <ShoppingCart className="w-6 h-6 text-primary" />
-          <h1 className="text-3xl font-bold">Faça seu Pedido Agora</h1>
+          <ShoppingCart className="w-6 h-6" />
+          <h1 className="text-3xl font-bold">Faça seu <span className="text-accent">Pedido</span> Agora
+            <span className="text-accent">!</span>
+          </h1>
         </div>
       </div>
 
@@ -94,7 +120,7 @@ export function CartPage() {
                         variant={selectedPayment === "pix" ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleProductSelect(product.id, "pix")}
-                        className="text-xs hover:bg-white hover:text-black"
+                        className="text-xs"
                       >
                         PIX {formatCurrency(product.pixPrice)}
                       </Button>
@@ -102,7 +128,7 @@ export function CartPage() {
                         variant={selectedPayment === "card" ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleProductSelect(product.id, "card")}
-                        className="text-xs hover:bg-white hover:text-black"
+                        className="text-xs"
                       >
                         Cartão {formatCurrency(product.cardPrice)}
                       </Button>
@@ -113,7 +139,7 @@ export function CartPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(product.id, Math.max(0, cartItem.quantity - 1))}
+                          onClick={() => updateQuantity(product.id, cartItem.paymentMethod, Math.max(0, cartItem.quantity - 1))}
                         >
                           <Minus className="w-3 h-3" />
                         </Button>
@@ -121,11 +147,11 @@ export function CartPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(product.id, cartItem.quantity + 1)}
+                          onClick={() => updateQuantity(product.id, cartItem.paymentMethod, cartItem.quantity + 1)}
                         >
                           <Plus className="w-3 h-3" />
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => removeItem(product.id)} className="ml-2">
+                        <Button variant="destructive" size="sm" onClick={() => removeItem(product.id, cartItem.paymentMethod)} className="ml-2">
                           Remover
                         </Button>
                       </div>
@@ -139,24 +165,24 @@ export function CartPage() {
 
         <div className="lg:sticky lg:top-8">
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Resumo do Pedido</h2>
+            <h2 className="text-xl font-semibold mb-4"><span className="text-accent">Resumo</span> do Pedido</h2>
 
             {items.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">Nenhum item selecionado ainda</p>
             ) : (
               <>
                 <div className="space-y-3 mb-6">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center">
-                      <div>
-                        <span className="font-medium">{item.name}</span>
-                        <div className="text-sm text-muted-foreground">
-                          {item.quantity}x • {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
-                        </div>
+                {items.map((item, index) => (
+                  <div key={`${item.id}-${item.paymentMethod}-${index}`} className="flex justify-between items-center">
+                    <div> 
+                      <span className="font-medium">{item.name}</span>
+                      <div className="text-sm text-muted-foreground">
+                        {item.quantity}x • {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
                       </div>
-                      <span className="font-semibold">{formatCurrency(item.unitPrice * item.quantity)}</span>
                     </div>
-                  ))}
+                    <span className="font-semibold">{formatCurrency(item.unitPrice * item.quantity)}</span>
+                  </div>
+                ))}
                 </div>
 
                 <div className="border-t pt-4 mb-6">
@@ -169,18 +195,18 @@ export function CartPage() {
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button
                     onClick={handleFinishOrder}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-lg"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 text-lg hover:bg-white hover:text-black"
                   >
                     Finalizar Pedido
                   </Button>
                 </motion.div>
 
                 <p className="text-xs text-muted-foreground text-center mt-3">
-                  Você será redirecionado para o WhatsApp da Líder Quéren Mota
+                  Você será redirecionado para o WhatsApp da Líder Quéren Mota.
                 </p>
 
                 {items.length > 0 && (
-                  <Button variant="outline" onClick={clearCart} className="w-full mt-2 bg-transparent">
+                  <Button variant="outline" onClick={clearCart} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 text-lg hover:bg-white hover:text-black">
                     Limpar Carrinho
                   </Button>
                 )}
@@ -189,6 +215,64 @@ export function CartPage() {
           </Card>
         </div>
       </div>
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsCheckoutOpen(false)} />
+          <div className="relative z-10 w-full max-w-md">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold mb-4 text-center">Finalize seu Pedido</h3>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Nome"
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+                <input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="Email"
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="Telefone (DDD+XXXXXXXXX)"
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+                <div className="mt-2">
+                  <div className="text-sm text-muted-foreground mb-1">CHAVE PIX: Quéren Mota Herculano - PICPAY</div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 text-sm border rounded-md px-3 py-2 bg-muted/50">
+                      +55 21 99144-2334
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopyPix}
+                    >
+                      {copiedPix ? "Copiado" : "Copiar"}
+                    </Button>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleSendOrder}
+                  disabled={!customerName || !customerEmail || !customerPhone}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 text-lg hover:bg-white hover:text-black"
+                >
+                  Enviar Pedido
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Você será redirecionado para o WhatsApp da Líder do Connect São Bento, Quéren Mota.
+                </p>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

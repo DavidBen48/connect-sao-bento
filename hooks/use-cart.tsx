@@ -18,6 +18,7 @@ interface CartContextType {
   updateQuantity: (id: number, paymentMethod: "pix" | "card", quantity: number) => void
   clearCart: () => void
   toggleCart: () => void
+  getTotal: () => number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -25,6 +26,16 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
+
+  /* 
+    removi a implementação direta e agora coloquei
+    a função getTotal para fazer a soma diretamente dentro
+    do Hook
+  */
+  const getTotal = () => {
+    return items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+  }
+  
 
   const addItem = (newItem: CartItem) => {
     setItems((currentItems) => {
@@ -77,6 +88,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         clearCart,
         toggleCart,
+        getTotal,
       }}
     >
       {children}

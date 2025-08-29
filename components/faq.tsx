@@ -26,7 +26,9 @@ export function FAQ() {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
             <span className="text-accent">FAQ</span>
           </h2>
-          <p className="text-muted-foreground text-lg">Perguntas frequentes sobre nossas blusas</p>
+          <p className="text-muted-foreground text-lg">
+          <span className="text-accent">Perguntas</span> frequentes sobre nossas blusas<span className="text-accent">!</span>
+          </p>
         </motion.div>
 
         <motion.div
@@ -42,10 +44,10 @@ export function FAQ() {
                 onClick={() => toggleItem(index)}
                 className="w-full p-6 text-left flex items-center justify-between hover:bg-muted/50 transition-colors"
               >
-                <h3 className="font-semibold text-lg">{item.question}</h3>
+                <h3 className="font-semibold text-lg"><span className="text-accent">- </span>{item.question}<span className="text-accent">?</span></h3>
                 <motion.div animate={{ rotate: openIndex === index ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                </motion.div>
+                  <ChevronDown className="h-5 w-5 text-muted-foreground text-accent" />
+                </motion.div> 
               </button>
 
               <AnimatePresence>

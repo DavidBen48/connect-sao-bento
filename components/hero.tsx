@@ -17,13 +17,13 @@ export function Hero() {
       <div className="text-center max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-balance">
-            <FancyText>{"{Connect} {S}ão {B}ento"}</FancyText>
+          <span className="text-accent">Connect</span> <span className="text-accent">S</span>ão <span className="text-accent">B</span>ento
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">Save the Date: 25 e 26 de Outubro de 2025.</p>
 
           <div className="text-lg md:text-xl mb-12 h-8">
-            <FancyText typewriterWords={["fé", "propósito", "comunhão", "esperança"]}>Conecte-se com </FancyText>
+            <FancyText typewriterWords={["Cristo", "Comunhão", "Esperança"]}>Conecte-se com </FancyText>!
           </div>
 
           <motion.div

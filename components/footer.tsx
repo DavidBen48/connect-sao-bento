@@ -37,7 +37,8 @@ export function Footer() {
             ))}
           </div>
 
-          <p className="text-muted-foreground text-sm">© 2025 — Criado por David Ben — Todos os direitos reservados.</p>
+          <p className="text-muted-foreground text-sm">
+            © <span className="text-accent">2025</span> — Criado por <span className="text-accent">David Ben</span> — Todos os direitos reservados.</p>
         </motion.div>
       </div>
     </footer>
