@@ -32,7 +32,7 @@ export const FAQ_ITEMS = [
   {
     question: "Como retiro minha blusa",
     answer:
-      "O mais ideal é combinar com as líderes do Connect - São Bento através do whatsapp. Combinando com elas, você poderá retirar as blusas em dias de culto público (quarta e domingo) e em cultos jovens (1º e 3º sábado do mês).",
+      "O mais ideal é combinar com as líderes do Connect - São Bento através do whatsapp. Combinando com elas, você poderá retirar as blusas em dias de culto público (quarta e domingo) e em cultos jovens (2º e 4º sábado do mês).",
   },
   {
     question: "Posso pagar no Pix",
