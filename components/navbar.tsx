@@ -63,7 +63,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-2xl font-bold">
-          <FancyText>{"{C}o{nn}e{ct}"}</FancyText>
+        <span className="text-accent">C</span>onnect <span className="text-accent">SB</span>
         </Link>
 
         {/* Navigation Links - only show on home page */}
