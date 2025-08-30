@@ -10,33 +10,45 @@ import { generateWhatsAppMessage, openWhatsApp, type CheckoutData } from "@/lib/
 import { PRODUCTS } from "@/lib/constants"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export function CartPage() {
   const { items, addItem, removeItem, updateQuantity, clearCart, getTotal } = useCart()
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<Record<number, "pix" | "card">>({})
+  const [selectedSizes, setSelectedSizes] = useState<Record<number, "PP" | "P" | "M" | "G" | "GG">>({})
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [customerName, setCustomerName] = useState("")
   const [customerEmail, setCustomerEmail] = useState("")
   const [customerPhone, setCustomerPhone] = useState("")
   const [copiedPix, setCopiedPix] = useState(false)
 
+  // Inicializar tamanhos padrão para cada produto
+  useEffect(() => {
+    const defaultSizes: Record<number, "PP" | "P" | "M" | "G" | "GG"> = {}
+    PRODUCTS.forEach((product) => {
+      defaultSizes[product.id] = "M"
+    })
+    setSelectedSizes(defaultSizes)
+  }, [])
+
   const handleProductSelect = (productId: number, paymentMethod: "pix" | "card") => {
     const product = PRODUCTS.find((p) => p.id === productId)
     if (!product) return
 
+    const selectedSize = selectedSizes[productId] || "M"
     const price = paymentMethod === "pix" ? product.pixPrice : product.cardPrice
-    const existingItem = items.find((item) => item.id === productId)
+    const existingItem = items.find((item) => item.id === productId && item.paymentMethod === paymentMethod)
 
     if (existingItem) {
-      // Update existing item with new payment method and price
-      removeItem(productId, existingItem.paymentMethod)
+      // Update existing item with new size and price
+      removeItem(productId, paymentMethod)
       addItem({
         id: productId,
         name: product.name,
         quantity: existingItem.quantity,
         paymentMethod,
         unitPrice: price,
+        size: selectedSize,
       })
     } else {
       // Add new item
@@ -46,6 +58,7 @@ export function CartPage() {
         quantity: 1,
         paymentMethod,
         unitPrice: price,
+        size: selectedSize,
       })
     }
 
@@ -53,6 +66,27 @@ export function CartPage() {
       ...prev,
       [productId]: paymentMethod,
     }))
+  }
+
+  const handleSizeSelect = (productId: number, size: "PP" | "P" | "M" | "G" | "GG") => {
+    setSelectedSizes((prev) => ({
+      ...prev,
+      [productId]: size,
+    }))
+
+    // Se o produto já está no carrinho, atualizar o tamanho
+    const existingItem = items.find((item) => item.id === productId && item.paymentMethod === selectedPaymentMethods[productId])
+    if (existingItem) {
+      removeItem(productId, existingItem.paymentMethod)
+      addItem({
+        id: productId,
+        name: existingItem.name,
+        quantity: existingItem.quantity,
+        paymentMethod: existingItem.paymentMethod,
+        unitPrice: existingItem.unitPrice,
+        size: size,
+      })
+    }
   }
 
   const handleFinishOrder = () => {
@@ -78,6 +112,18 @@ export function CartPage() {
     setCopiedPix(true)
     setTimeout(() => setCopiedPix(false), 3000)
   }
+
+  // Validação de email e telefone
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const isValidPhone = (phone: string) => {
+    return phone.length === 11 && /^\d{11}$/.test(phone)
+  }
+
+  const canSubmit = customerName && isValidEmail(customerEmail) && isValidPhone(customerPhone)
 
   return (
     <div className="container mx-auto px-4 max-w-4xl pt-16">
@@ -117,10 +163,77 @@ export function CartPage() {
 
                     <div className="flex gap-2 mb-3">
                       <Button
+                        variant={selectedSizes[product.id] === "PP" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleSizeSelect(product.id, "PP")}
+                        className={`text-xs ${
+                          selectedSizes[product.id] === "PP"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white"
+                            : "bg-transparent text-black dark:text-black border border-gray-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white"
+                        }`}
+                      >
+                        PP
+                      </Button>
+                      <Button
+                        variant={selectedSizes[product.id] === "P" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleSizeSelect(product.id, "P")}
+                        className={`text-xs ${
+                          selectedSizes[product.id] === "P"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white"
+                            : "bg-transparent text-black dark:text-black border border-gray-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white"
+                        }`}
+                      >
+                        P
+                      </Button>
+                      <Button
+                        variant={selectedSizes[product.id] === "M" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleSizeSelect(product.id, "M")}
+                        className={`text-xs ${
+                          selectedSizes[product.id] === "M"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white"
+                            : "bg-transparent text-black dark:text-black border border-gray-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white"
+                        }`}
+                      >
+                        M
+                      </Button>
+                      <Button
+                        variant={selectedSizes[product.id] === "G" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleSizeSelect(product.id, "G")}
+                        className={`text-xs ${
+                          selectedSizes[product.id] === "G"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white"
+                            : "bg-transparent text-black dark:text-black border border-gray-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white"
+                        }`}
+                      >
+                        G
+                      </Button>
+                      <Button
+                        variant={selectedSizes[product.id] === "GG" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleSizeSelect(product.id, "GG")}
+                        className={`text-xs ${
+                          selectedSizes[product.id] === "GG"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white"
+                            : "bg-transparent text-black dark:text-black border border-gray-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white"
+                        }`}
+                      >
+                        GG
+                      </Button>
+                    </div>
+
+                    <div className="flex gap-2 mb-3">
+                      <Button
                         variant={selectedPayment === "pix" ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleProductSelect(product.id, "pix")}
-                        className="text-xs"
+                        className={`text-xs ${
+                          selectedPayment === "pix"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white"
+                            : "bg-transparent text-black dark:text-black border border-gray-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white"
+                        }`}
                       >
                         PIX {formatCurrency(product.pixPrice)}
                       </Button>
@@ -128,7 +241,11 @@ export function CartPage() {
                         variant={selectedPayment === "card" ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleProductSelect(product.id, "card")}
-                        className="text-xs"
+                        className={`text-xs ${
+                          selectedPayment === "card"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white"
+                            : "bg-transparent text-black dark:text-black border border-gray-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white"
+                        }`}
                       >
                         Cartão {formatCurrency(product.cardPrice)}
                       </Button>
@@ -173,11 +290,14 @@ export function CartPage() {
               <>
                 <div className="space-y-3 mb-6">
                 {items.map((item, index) => (
-                  <div key={`${item.id}-${item.paymentMethod}-${index}`} className="flex justify-between items-center">
+                  <div key={`${item.id}-${item.paymentMethod}-${item.size}-${index}`} className="flex justify-between items-center">
                     <div> 
                       <span className="font-medium">{item.name}</span>
                       <div className="text-sm text-muted-foreground">
                         {item.quantity}x • {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Tamanho • {item.size}
                       </div>
                     </div>
                     <span className="font-semibold">{formatCurrency(item.unitPrice * item.quantity)}</span>
@@ -234,15 +354,31 @@ export function CartPage() {
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   placeholder="Email"
-                  className="w-full px-3 py-2 border rounded-md bg-background"
+                  className={`w-full px-3 py-2 border rounded-md bg-background ${
+                    customerEmail && !isValidEmail(customerEmail) ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {customerEmail && !isValidEmail(customerEmail) && (
+                  <p className="text-red-500 text-xs">Digite um email válido</p>
+                )}
                 <input
                   type="tel"
                   value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '')
+                    if (value.length <= 11) {
+                      setCustomerPhone(value)
+                    }
+                  }}
                   placeholder="Telefone (DDD+XXXXXXXXX)"
-                  className="w-full px-3 py-2 border rounded-md bg-background"
+                  maxLength={11}
+                  className={`w-full px-3 py-2 border rounded-md bg-background ${
+                    customerPhone && !isValidPhone(customerPhone) ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {customerPhone && !isValidPhone(customerPhone) && (
+                  <p className="text-red-500 text-xs">Digite exatamente 11 dígitos (DDD + número)</p>
+                )}
                 <div className="mt-2">
                   <div className="text-sm text-muted-foreground mb-1">CHAVE PIX: Quéren Mota Herculano - PICPAY</div>
                   <div className="flex items-center gap-2">
@@ -260,7 +396,7 @@ export function CartPage() {
                 </div>
                 <Button
                   onClick={handleSendOrder}
-                  disabled={!customerName || !customerEmail || !customerPhone}
+                  disabled={!canSubmit}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 text-lg hover:bg-white hover:text-black"
                 >
                   Enviar Pedido

@@ -2,7 +2,6 @@
   esse arquivo não pode ser alterado,
   a menos que seja a função generateWhatsAppMessage()
 
-
 */
 
 import { WHATSAPP_NUMBER } from "./constants"
@@ -13,6 +12,7 @@ export interface CartItem {
   quantity: number
   paymentMethod: "pix" | "card"
   unitPrice: number
+  size: "PP" | "P" | "M" | "G" | "GG"
 }
 
 export interface CheckoutData {
@@ -38,7 +38,7 @@ export function generateWhatsAppMessage(data: CheckoutData): string {
   const orderId = generateOrderId()
   const total = calculateTotal(data.items)
 
-  const itemsList = data.items.map((item) => `${item.quantity} ${item.name}`).join("\n")
+  const itemsList = data.items.map((item) => `${item.quantity}x | ${item.name} | ${item.size}`).join("\n")
 
   return `
 === Comprovante de Pedido ===

@@ -8,6 +8,7 @@ export interface CartItem {
   quantity: number
   paymentMethod: "pix" | "card"
   unitPrice: number
+  size: "PP" | "P" | "M" | "G" | "GG"
 }
 
 interface CartContextType {
@@ -45,7 +46,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (existingItemIndex >= 0) {
         const updatedItems = [...currentItems]
-        updatedItems[existingItemIndex].quantity += newItem.quantity
+        updatedItems[existingItemIndex] = { ...newItem, quantity: updatedItems[existingItemIndex].quantity + newItem.quantity }
         return updatedItems
       }
 
