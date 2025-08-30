@@ -29,7 +29,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.3 }} className="w-full max-w-sm mx-auto">
-      <Card className="overflow-hidden bg-card border-border hover:shadow-xl transition-all duration-300">
+      <Card className="overflow-hidden bg-card border-2 border-white/30 hover:shadow-xl transition-all duration-300">
         <div className="aspect-square relative overflow-hidden">
           <Image
             src={product.image || "/placeholder.svg"}

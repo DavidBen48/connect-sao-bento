@@ -65,7 +65,7 @@ export function CartDrawer() {
                   ) : (
                     <div className="space-y-4">
                       {items.map((item) => (
-                        <Card key={`${item.id}-${item.paymentMethod}`} className="p-4">
+                        <Card key={`${item.id}-${item.paymentMethod}`} className="p-4 border-2 border-white/30">
                           <div className="flex items-start justify-between mb-2">
                             <div>
                               <h3 className="font-semibold">{item.name}</h3>

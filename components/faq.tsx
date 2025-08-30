@@ -39,7 +39,7 @@ export function FAQ() {
           className="space-y-4"
         >
           {FAQ_ITEMS.map((item, index) => (
-            <Card key={index} className="overflow-hidden">
+            <Card key={index} className="overflow-hidden border-2 border-white/30">
               <button
                 onClick={() => toggleItem(index)}
                 className="w-full p-6 text-left flex items-center justify-between hover:bg-muted/50 transition-colors"

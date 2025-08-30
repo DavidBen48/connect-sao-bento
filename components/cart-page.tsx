@@ -123,7 +123,11 @@ export function CartPage() {
     return phone.length === 11 && /^\d{11}$/.test(phone)
   }
 
-  const canSubmit = customerName && isValidEmail(customerEmail) && isValidPhone(customerPhone)
+  const isValidName = (name: string) => {
+    return name.length >= 8 && /^[a-zA-ZÀ-ÿ\s]+$/.test(name)
+  }
+
+  const canSubmit = customerName && isValidName(customerName) && isValidEmail(customerEmail) && isValidPhone(customerPhone)
 
   return (
     <div className="container mx-auto px-4 max-w-4xl pt-16">
@@ -151,7 +155,7 @@ export function CartPage() {
             const selectedPayment = selectedPaymentMethods[product.id] || "pix"
 
             return (
-              <Card key={product.id} className="p-4">
+              <Card key={product.id} className="p-4 border-2 border-white/30">
                 <div className="flex gap-4">
                   <div className="w-20 h-20 relative rounded-lg overflow-hidden">
                     <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
@@ -281,7 +285,7 @@ export function CartPage() {
         </div>
 
         <div className="lg:sticky lg:top-8">
-          <Card className="p-6">
+          <Card className="p-6 border-2 border-white/30">
             <h2 className="text-xl font-semibold mb-4"><span className="text-accent">Resumo</span> do Pedido</h2>
 
             {items.length === 0 ? (
@@ -339,16 +343,24 @@ export function CartPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsCheckoutOpen(false)} />
           <div className="relative z-10 w-full max-w-md">
-            <Card className="p-6">
+            <Card className="p-6 border-2 border-white/30">
               <h3 className="text-xl font-semibold mb-4 text-center">Finalize seu Pedido</h3>
               <div className="space-y-3">
                 <input
                   type="text"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '')
+                    setCustomerName(value)
+                  }}
                   placeholder="Nome"
-                  className="w-full px-3 py-2 border rounded-md bg-background"
+                  className={`w-full px-3 py-2 border rounded-md bg-background ${
+                    customerName && !isValidName(customerName) ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {customerName && !isValidName(customerName) && (
+                  <p className="text-red-500 text-xs">Digite seu nome, não seu apelido... </p>
+                )}
                 <input
                   type="email"
                   value={customerEmail}
@@ -377,7 +389,7 @@ export function CartPage() {
                   }`}
                 />
                 {customerPhone && !isValidPhone(customerPhone) && (
-                  <p className="text-red-500 text-xs">Digite exatamente 11 dígitos (DDD + número)</p>
+                  <p className="text-red-500 text-xs">Digite os 11 dígitos (DDD + número)</p>
                 )}
                 <div className="mt-2">
                   <div className="text-sm text-muted-foreground mb-1">CHAVE PIX: Quéren Mota Herculano - PICPAY</div>
