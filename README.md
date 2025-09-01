@@ -1,4 +1,9 @@
 # Connect São Bento - E-commerce para Evento Cristão
+deploy: 
+```
+connect-saobento.vercel.app
+```
+
 
 ## 📋 Visão Geral do Projeto
 
